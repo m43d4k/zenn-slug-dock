@@ -1,0 +1,196 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000000000000000000001 /* SlugDockApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* SlugDockApp.swift */; };
+		A10000000000000000000002 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* AppState.swift */; };
+		A10000000000000000000003 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003 /* Models.swift */; };
+		A10000000000000000000004 /* Services.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* Services.swift */; };
+		A10000000000000000000005 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* Utilities.swift */; };
+		A10000000000000000000006 /* Views.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* Views.swift */; };
+		A10000000000000000000007 /* SlugDockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000007 /* SlugDockTests.swift */; };
+		A10000000000000000000008 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = A90000000000000000000002 /* Yams */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		AA0000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A70000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A60000000000000000000001;
+			remoteInfo = SlugDock;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		A20000000000000000000001 /* SlugDockApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlugDockApp.swift; sourceTree = "<group>"; };
+		A20000000000000000000002 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		A20000000000000000000003 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		A20000000000000000000004 /* Services.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services.swift; sourceTree = "<group>"; };
+		A20000000000000000000005 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
+		A20000000000000000000006 /* Views.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views.swift; sourceTree = "<group>"; };
+		A20000000000000000000007 /* SlugDockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlugDockTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000008 /* SlugDock.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SlugDock.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000009 /* SlugDockTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SlugDockTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A30000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000008 /* Yams in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A30000000000000000000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A40000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				A40000000000000000000002 /* SlugDock */,
+				A40000000000000000000008 /* SlugDockTests */,
+				A40000000000000000000009 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A40000000000000000000002 /* SlugDock */ = {
+			isa = PBXGroup;
+			children = (
+				A40000000000000000000003 /* App */,
+				A40000000000000000000004 /* Models */,
+				A40000000000000000000005 /* Services */,
+				A40000000000000000000006 /* Utilities */,
+				A40000000000000000000007 /* Views */,
+			);
+			path = SlugDock;
+			sourceTree = "<group>";
+		};
+		A40000000000000000000003 /* App */ = {isa = PBXGroup; children = (A20000000000000000000001, A20000000000000000000002,); path = App; sourceTree = "<group>"; };
+		A40000000000000000000004 /* Models */ = {isa = PBXGroup; children = (A20000000000000000000003,); path = Models; sourceTree = "<group>"; };
+		A40000000000000000000005 /* Services */ = {isa = PBXGroup; children = (A20000000000000000000004,); path = Services; sourceTree = "<group>"; };
+		A40000000000000000000006 /* Utilities */ = {isa = PBXGroup; children = (A20000000000000000000005,); path = Utilities; sourceTree = "<group>"; };
+		A40000000000000000000007 /* Views */ = {isa = PBXGroup; children = (A20000000000000000000006,); path = Views; sourceTree = "<group>"; };
+		A40000000000000000000008 /* SlugDockTests */ = {isa = PBXGroup; children = (A20000000000000000000007,); path = SlugDockTests; sourceTree = "<group>"; };
+		A40000000000000000000009 /* Products */ = {
+			isa = PBXGroup;
+			children = (A20000000000000000000008, A20000000000000000000009,);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A60000000000000000000001 /* SlugDock */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AB0000000000000000000002 /* Build configuration list for PBXNativeTarget "SlugDock" */;
+			buildPhases = (A50000000000000000000001, A30000000000000000000001, A50000000000000000000002,);
+			buildRules = ();
+			dependencies = ();
+			name = SlugDock;
+			packageProductDependencies = (A90000000000000000000002 /* Yams */,);
+			productName = SlugDock;
+			productReference = A20000000000000000000008 /* SlugDock.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A60000000000000000000002 /* SlugDockTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AB0000000000000000000003 /* Build configuration list for PBXNativeTarget "SlugDockTests" */;
+			buildPhases = (A50000000000000000000003, A30000000000000000000002, A50000000000000000000004,);
+			buildRules = ();
+			dependencies = (AA0000000000000000000002 /* PBXTargetDependency */,);
+			name = SlugDockTests;
+			productName = SlugDockTests;
+			productReference = A20000000000000000000009 /* SlugDockTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A70000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2630;
+				LastUpgradeCheck = 2630;
+				TargetAttributes = {
+					A60000000000000000000001 = {CreatedOnToolsVersion = 26.3; };
+					A60000000000000000000002 = {CreatedOnToolsVersion = 26.3; TestTargetID = A60000000000000000000001; };
+				};
+			};
+			buildConfigurationList = AB0000000000000000000001 /* Build configuration list for PBXProject "SlugDock" */;
+			developmentRegion = ja;
+			hasScannedForEncodings = 0;
+			knownRegions = (ja, en, Base,);
+			mainGroup = A40000000000000000000001;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (A90000000000000000000001 /* XCRemoteSwiftPackageReference "Yams" */,);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = A40000000000000000000009 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (A60000000000000000000001, A60000000000000000000002,);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A50000000000000000000002 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		A50000000000000000000004 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A50000000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (A10000000000000000000001, A10000000000000000000002, A10000000000000000000003, A10000000000000000000004, A10000000000000000000005, A10000000000000000000006,);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A50000000000000000000003 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000007,); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AA0000000000000000000002 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = A60000000000000000000001 /* SlugDock */; targetProxy = AA0000000000000000000001 /* PBXContainerItemProxy */; };
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		AC0000000000000000000001 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {CLANG_ENABLE_MODULES = YES; ENABLE_TESTABILITY = YES; MACOSX_DEPLOYMENT_TARGET = 15.0; ONLY_ACTIVE_ARCH = YES; SDKROOT = macosx; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_VERSION = 6.0; }; name = Debug; };
+		AC0000000000000000000002 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {CLANG_ENABLE_MODULES = YES; MACOSX_DEPLOYMENT_TARGET = 15.0; SDKROOT = macosx; SWIFT_COMPILATION_MODE = wholemodule; SWIFT_VERSION = 6.0; }; name = Release; };
+		AC0000000000000000000003 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; ENABLE_APP_SANDBOX = NO; ENABLE_HARDENED_RUNTIME = NO; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = SlugDock; INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools"; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = local.SlugDock; PRODUCT_NAME = "$(TARGET_NAME)"; SUPPORTED_PLATFORMS = macosx; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_STRICT_CONCURRENCY = complete; }; name = Debug; };
+		AC0000000000000000000004 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; ENABLE_APP_SANDBOX = NO; ENABLE_HARDENED_RUNTIME = NO; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = SlugDock; INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools"; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = local.SlugDock; PRODUCT_NAME = "$(TARGET_NAME)"; SUPPORTED_PLATFORMS = macosx; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_STRICT_CONCURRENCY = complete; }; name = Release; };
+		AC0000000000000000000005 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = local.SlugDockTests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_STRICT_CONCURRENCY = complete; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SlugDock.app/Contents/MacOS/SlugDock"; }; name = Debug; };
+		AC0000000000000000000006 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = local.SlugDockTests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_STRICT_CONCURRENCY = complete; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SlugDock.app/Contents/MacOS/SlugDock"; }; name = Release; };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AB0000000000000000000001 /* Build configuration list for PBXProject "SlugDock" */ = {isa = XCConfigurationList; buildConfigurations = (AC0000000000000000000001, AC0000000000000000000002,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		AB0000000000000000000002 /* Build configuration list for PBXNativeTarget "SlugDock" */ = {isa = XCConfigurationList; buildConfigurations = (AC0000000000000000000003, AC0000000000000000000004,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		AB0000000000000000000003 /* Build configuration list for PBXNativeTarget "SlugDockTests" */ = {isa = XCConfigurationList; buildConfigurations = (AC0000000000000000000005, AC0000000000000000000006,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A90000000000000000000001 /* XCRemoteSwiftPackageReference "Yams" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jpsim/Yams.git";
+			requirement = {kind = exactVersion; version = 6.2.2; };
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A90000000000000000000002 /* Yams */ = {isa = XCSwiftPackageProductDependency; package = A90000000000000000000001 /* XCRemoteSwiftPackageReference "Yams" */; productName = Yams; };
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = A70000000000000000000001 /* Project object */;
+}
