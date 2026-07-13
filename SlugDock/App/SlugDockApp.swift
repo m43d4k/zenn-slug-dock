@@ -28,20 +28,20 @@ struct SlugDockApp: App {
 
                 Divider()
 
-                Button("Markdownをコピー") { state.copySelectedImageMarkdown() }
-                    .keyboardShortcut("c", modifiers: .command)
-                    .disabled(state.selectedImageID == nil)
-
-                Button("選択画像のMarkdownをコピー") { state.copySelectedImageMarkdown() }
-                    .keyboardShortcut(.return, modifiers: [])
+                Button("Markdownとしてコピー") { state.copySelectedImageMarkdown() }
+                    .keyboardShortcut("c", modifiers: [.command, .shift])
                     .disabled(state.selectedImageID == nil)
 
                 Button("画像のフルパスをコピー") { state.copySelectedImagePath() }
-                    .keyboardShortcut("c", modifiers: [.command, .shift])
+                    .keyboardShortcut("c", modifiers: [.command, .option])
                     .disabled(state.selectedImageID == nil)
 
                 Button("画像をFinderで表示") { state.revealSelectedImage() }
                     .keyboardShortcut("r", modifiers: [.command, .shift])
+                    .disabled(state.selectedImageID == nil)
+
+                Button("画像名を変更…") { state.requestRenameSelectedImage() }
+                    .keyboardShortcut(.return, modifiers: [])
                     .disabled(state.selectedImageID == nil)
             }
         }

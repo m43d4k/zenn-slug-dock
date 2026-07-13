@@ -38,6 +38,11 @@ struct RootView: View {
         } message: {
             Text(state.alertMessage ?? "")
         }
+        .sheet(item: $state.imageBeingRenamed) { image in
+            RenameImageSheet(image: image) { fileName in
+                state.renameImage(image, toFileName: fileName)
+            }
+        }
         .task { state.start() }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             state.applicationBecameActive()
@@ -235,7 +240,7 @@ private struct ImageGridView: View {
                             state.selectedImageID = image.id
                         })
                         .contextMenu {
-                            Button("Markdownをコピー") {
+                            Button("Markdownとしてコピー") {
                                 state.selectedImageID = image.id
                                 state.copySelectedImageMarkdown()
                             }
@@ -246,6 +251,11 @@ private struct ImageGridView: View {
                             Button("Finderで表示") {
                                 state.selectedImageID = image.id
                                 state.revealSelectedImage()
+                            }
+                            Divider()
+                            Button("画像名を変更…") {
+                                state.selectedImageID = image.id
+                                state.requestRenameSelectedImage()
                             }
                         }
                     }
@@ -267,6 +277,55 @@ private struct ImageGridView: View {
     }
 }
 
+private struct RenameImageSheet: View {
+    let image: ImageAsset
+    let rename: (String) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var baseName: String
+
+    init(image: ImageAsset, rename: @escaping (String) -> Void) {
+        self.image = image
+        self.rename = rename
+        _baseName = State(initialValue: image.fileURL.deletingPathExtension().lastPathComponent)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("画像名を変更")
+                .font(.headline)
+            HStack(spacing: 6) {
+                TextField("ファイル名", text: $baseName)
+                    .textFieldStyle(.roundedBorder)
+                    .accessibilityLabel("新しい画像ファイル名")
+                    .onSubmit(submit)
+                Text(".\(image.fileURL.pathExtension)")
+                    .foregroundStyle(.secondary)
+            }
+            Text("拡張子は変更できません。")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            HStack {
+                Spacer()
+                Button("キャンセル", role: .cancel) { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+                Button("変更") { submit() }
+                    .keyboardShortcut(.defaultAction)
+                    .disabled(baseName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
+        }
+        .padding(20)
+        .frame(width: 420)
+    }
+
+    private func submit() {
+        let normalizedBaseName = baseName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedBaseName.isEmpty else { return }
+        rename("\(normalizedBaseName).\(image.fileURL.pathExtension)")
+        dismiss()
+    }
+}
+
 private struct ImageCell: View {
     let image: ImageAsset
     let isSelected: Bool
@@ -278,12 +337,17 @@ private struct ImageCell: View {
                 .aspectRatio(4 / 3, contentMode: .fit)
                 .background(.quaternary, in: RoundedRectangle(cornerRadius: 7))
 
-            Text(image.fileName)
-                .lineLimit(2)
+            Text(image.fileURL.deletingPathExtension().lastPathComponent)
+                .lineLimit(1)
+                .truncationMode(.middle)
                 .font(.callout)
-            Text(FileSizeTextFormatter.string(fromByteCount: image.fileSize))
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            HStack {
+                Text(FileSizeTextFormatter.string(fromByteCount: image.fileSize))
+                Spacer(minLength: 8)
+                Text(".\(image.fileURL.pathExtension)")
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
         }
         .padding(9)
         .background(.background, in: RoundedRectangle(cornerRadius: 10))

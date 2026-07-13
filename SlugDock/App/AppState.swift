@@ -11,6 +11,7 @@ final class AppState {
     var selectedArticle: Article?
     var images: [ImageAsset] = []
     var selectedImageID: URL?
+    var imageBeingRenamed: ImageAsset?
     var searchText = ""
     var statusMessage: String?
     var alertMessage: String?
@@ -68,6 +69,7 @@ final class AppState {
         selectedArticle = nil
         articleSelection = []
         selectedImageID = nil
+        imageBeingRenamed = nil
         images = []
         searchText = ""
         reload()
@@ -97,12 +99,14 @@ final class AppState {
         selectedArticle = article
         articleSelection = [article.id]
         selectedImageID = nil
+        imageBeingRenamed = nil
         loadImages(for: article)
     }
 
     func returnToArticleList() {
         selectedArticle = nil
         selectedImageID = nil
+        imageBeingRenamed = nil
         images = []
     }
 
@@ -140,7 +144,7 @@ final class AppState {
 
     func copySelectedImageMarkdown() {
         guard let image = selectedImage else { return }
-        copy(image.markdownPath, successMessage: "Markdownをコピーしました")
+        copy(image.markdownPath, successMessage: "Markdownとしてコピーしました")
     }
 
     func copySelectedImagePath() {
@@ -151,6 +155,32 @@ final class AppState {
     func revealSelectedImage() {
         guard let image = selectedImage else { return }
         perform { try SystemService.revealInFinder(image.fileURL) }
+    }
+
+    func requestRenameSelectedImage() {
+        imageBeingRenamed = selectedImage
+    }
+
+    func renameImage(_ image: ImageAsset, toFileName fileName: String) {
+        guard let article = selectedArticle else { return }
+        imageBeingRenamed = nil
+        beginLoading()
+        Task {
+            defer { endLoading() }
+            do {
+                let renamedURL = try await fileSystem.renameImage(image, toFileName: fileName, for: article)
+                guard selectedArticle?.id == article.id else { return }
+                await refreshImages(for: article, preferredSelection: renamedURL)
+                if renamedURL == image.fileURL {
+                    showStatus("画像名は変更されていません")
+                } else {
+                    showStatus("画像名を変更しました")
+                }
+            } catch {
+                guard selectedArticle?.id == article.id else { return }
+                statusMessage = error.localizedDescription
+            }
+        }
     }
 
     func importImages(_ urls: [URL]) {
@@ -226,7 +256,8 @@ final class AppState {
             guard selectedArticle?.id == article.id else { return }
             images = scanned
             selectedImageID = preferredSelection.flatMap { id in
-                scanned.contains(where: { $0.id == id }) ? id : nil
+                let resolvedID = id.resolvingSymlinksInPath()
+                return scanned.first(where: { $0.id.resolvingSymlinksInPath() == resolvedID })?.id
             }
             statusMessage = article.displayError
         } catch {

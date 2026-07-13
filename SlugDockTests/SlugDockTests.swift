@@ -139,6 +139,59 @@ final class SlugDockTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(images.first?.fileSize, 3_000_001)
     }
 
+    func testImageRenameMovesFileAndRefreshesAssetMetadata() async throws {
+        let repository = try makeTemporaryRepository()
+        defer { try? FileManager.default.removeItem(at: repository) }
+        let article = makeArticle(repository: repository)
+        try FileManager.default.createDirectory(at: article.imageDirectoryURL, withIntermediateDirectories: true)
+        let source = article.imageDirectoryURL.appendingPathComponent("before.png")
+        try Data("image".utf8).write(to: source)
+        let service = FileSystemService()
+        let initialImages = try await service.scanImages(for: article)
+        let image = try XCTUnwrap(initialImages.first)
+
+        let destination = try await service.renameImage(image, toFileName: "図 解.png", for: article)
+        let refreshedImages = try await service.scanImages(for: article)
+        let refreshed = try XCTUnwrap(refreshedImages.first)
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: source.path))
+        XCTAssertEqual(destination.lastPathComponent, "図 解.png")
+        XCTAssertEqual(refreshed.fileURL.resolvingSymlinksInPath(), destination.resolvingSymlinksInPath())
+        XCTAssertEqual(refreshed.fileName, "図 解.png")
+        XCTAssertEqual(refreshed.markdownPath, "![](</images/test/図 解.png>)")
+    }
+
+    func testImageRenameRejectsInvalidExtensionAndCollisionWithoutChangingSource() async throws {
+        let repository = try makeTemporaryRepository()
+        defer { try? FileManager.default.removeItem(at: repository) }
+        let article = makeArticle(repository: repository)
+        try FileManager.default.createDirectory(at: article.imageDirectoryURL, withIntermediateDirectories: true)
+        let source = article.imageDirectoryURL.appendingPathComponent("source.png")
+        let existing = article.imageDirectoryURL.appendingPathComponent("existing.png")
+        try Data("source".utf8).write(to: source)
+        try Data("existing".utf8).write(to: existing)
+        let service = FileSystemService()
+        let images = try await service.scanImages(for: article)
+        let image = try XCTUnwrap(images.first(where: { $0.fileName == source.lastPathComponent }))
+
+        for (fileName, expectedError) in [
+            (" \n", SlugDockError.invalidImageFileName),
+            ("../outside.png", SlugDockError.invalidImageFileName),
+            ("renamed.jpg", SlugDockError.imageExtensionCannotChange),
+            ("existing.png", SlugDockError.imageNameAlreadyExists)
+        ] {
+            do {
+                _ = try await service.renameImage(image, toFileName: fileName, for: article)
+                XCTFail("\(fileName)への変更は失敗する必要があります")
+            } catch let error as SlugDockError {
+                XCTAssertEqual(error, expectedError)
+            }
+        }
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: source.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: existing.path))
+    }
+
     private func makeTemporaryRepository() throws -> URL {
         let repository = FileManager.default.temporaryDirectory
             .appendingPathComponent("SlugDockTests-\(UUID().uuidString)", isDirectory: true)

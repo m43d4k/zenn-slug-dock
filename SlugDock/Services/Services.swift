@@ -200,6 +200,51 @@ actor FileSystemService {
         return ImageImportResult(copied: copied, failures: failures, selectedURL: selectedURL)
     }
 
+    func renameImage(_ image: ImageAsset, toFileName rawFileName: String, for article: Article) throws -> URL {
+        let source = image.fileURL.standardizedFileURL
+        let directory = article.imageDirectoryURL.standardizedFileURL
+        guard source.deletingLastPathComponent() == directory else {
+            throw SlugDockError.targetMissing
+        }
+
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: source.path, isDirectory: &isDirectory),
+              !isDirectory.boolValue else {
+            throw SlugDockError.targetMissing
+        }
+
+        let fileName = rawFileName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !fileName.isEmpty,
+              fileName != ".",
+              fileName != "..",
+              !fileName.contains("/"),
+              !fileName.contains("\0"),
+              (fileName as NSString).lastPathComponent == fileName else {
+            throw SlugDockError.invalidImageFileName
+        }
+
+        let destination = directory.appendingPathComponent(fileName).standardizedFileURL
+        guard !destination.deletingPathExtension().lastPathComponent.isEmpty else {
+            throw SlugDockError.invalidImageFileName
+        }
+        guard destination.pathExtension == source.pathExtension else {
+            throw SlugDockError.imageExtensionCannotChange
+        }
+        guard destination != source else {
+            return source
+        }
+        guard !FileManager.default.fileExists(atPath: destination.path) else {
+            throw SlugDockError.imageNameAlreadyExists
+        }
+
+        do {
+            try FileManager.default.moveItem(at: source, to: destination)
+            return destination
+        } catch {
+            throw SlugDockError.imageRenameFailed(error.localizedDescription)
+        }
+    }
+
     private func validateImportSource(_ url: URL) throws -> Int64 {
         guard url.isFileURL else {
             throw SlugDockError.remoteURLNotSupported
@@ -255,6 +300,10 @@ enum SlugDockError: LocalizedError, Equatable {
     case unsupportedImageType
     case fileNotReadable
     case imageTooLarge
+    case invalidImageFileName
+    case imageExtensionCannotChange
+    case imageNameAlreadyExists
+    case imageRenameFailed(String)
     case targetMissing
     case clipboardWriteFailed
 
@@ -267,6 +316,10 @@ enum SlugDockError: LocalizedError, Equatable {
         case .unsupportedImageType: "対応していない画像形式です"
         case .fileNotReadable: "ファイルを読み取れません"
         case .imageTooLarge: "3MBを超えているため追加できません"
+        case .invalidImageFileName: "画像名が正しくありません"
+        case .imageExtensionCannotChange: "画像の拡張子は変更できません"
+        case .imageNameAlreadyExists: "同じ名前のファイルがすでに存在します"
+        case let .imageRenameFailed(reason): "画像名を変更できません: \(reason)"
         case .targetMissing: "対象が見つかりません"
         case .clipboardWriteFailed: "クリップボードへコピーできません"
         }
