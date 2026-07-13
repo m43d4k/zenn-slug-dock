@@ -139,22 +139,26 @@ private struct ArticleListView: View {
                 } label: {
                     Label("Open Repository in Finder", systemImage: "folder")
                 }
+                .help("Open Repository in Finder")
                 Button {
                     state.copyRepositoryPath()
                 } label: {
                     Label("Copy Repository Path", systemImage: "doc.on.doc")
                 }
+                .help("Copy Repository Path")
                 Button {
                     state.chooseRepository()
                 } label: {
                     Label("Change Repository", systemImage: "folder.badge.gearshape")
                 }
+                .help("Change Repository")
                 Button {
                     state.reload()
                 } label: {
                     Label("Reload", systemImage: "arrow.clockwise")
                 }
                 .accessibilityLabel("Reload articles")
+                .help("Reload Articles (⌘R)")
             }
         }
     }
