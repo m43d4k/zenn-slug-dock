@@ -1,8 +1,21 @@
+import AppKit
 import Foundation
 import XCTest
 @testable import SlugDock
 
 final class SlugDockTests: XCTestCase, @unchecked Sendable {
+    @MainActor
+    func testCopyRepositoryPathCopiesOnlyAbsolutePath() {
+        let state = AppState()
+        let repository = URL(fileURLWithPath: "/tmp/Zenn Repository", isDirectory: true)
+        state.repositoryURL = repository
+
+        state.copyRepositoryPath()
+
+        XCTAssertEqual(NSPasteboard.general.string(forType: .string), "/tmp/Zenn Repository")
+        XCTAssertEqual(state.statusMessage, "Repository path copied")
+    }
+
     func testFrontMatterParsesQuotedTitleContainingColon() {
         let result = FrontMatterParser.parse(markdown: """
         ---

@@ -190,6 +190,11 @@ final class AppState {
         perform { try SystemService.openInFinder(repositoryURL) }
     }
 
+    func copyRepositoryPath() {
+        guard let repositoryURL else { return }
+        copy(repositoryURL.path, successMessage: "Repository path copied")
+    }
+
     func copySelectedImageMarkdown() {
         guard let image = selectedImage else { return }
         copy(image.markdownPath, successMessage: "Copied as Markdown")

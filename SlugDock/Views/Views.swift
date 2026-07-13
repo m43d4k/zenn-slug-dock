@@ -140,6 +140,11 @@ private struct ArticleListView: View {
                     Label("Open Repository in Finder", systemImage: "folder")
                 }
                 Button {
+                    state.copyRepositoryPath()
+                } label: {
+                    Label("Copy Repository Path", systemImage: "doc.on.doc")
+                }
+                Button {
                     state.chooseRepository()
                 } label: {
                     Label("Change Repository", systemImage: "folder.badge.gearshape")
