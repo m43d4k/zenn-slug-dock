@@ -401,6 +401,13 @@ Open Repository in Finder
 
 - `Copy MD Path`
 - `Show MD in Finder`
+- `Open MD in App`
+
+`Open MD in App`は、選択中記事のMarkdownをSlugDockで設定したMarkdownアプリで開く。
+Markdownアプリが未設定の場合はアプリ選択パネルを表示し、選択されたアプリを保存してからMarkdownを開く。
+この設定はmacOS全体の既定アプリを変更しない。
+
+`Actions`メニューに`Change Markdown App…`を表示し、保存済みのMarkdownアプリを再設定できるようにする。
 
 ### 10.3 画像フォルダ操作
 
@@ -409,7 +416,7 @@ Open Repository in Finder
 - `Copy Image Folder Path`
 - `Open Image Folder`
 
-これら4つの操作ボタンは横一列に並べ、同じ幅にする。
+Markdown操作と画像フォルダ操作の5つのボタンは横一列に並べ、同じ幅にする。
 `Back`を含むWorkspace View内の操作ボタンは、文字の周囲に余白を設け、標準ボタンより少し高く表示する。
 
 ### 10.4 画像一覧
@@ -797,6 +804,7 @@ Article file not found
 
 - 最後に選択したリポジトリルート
 - ウインドウサイズ
+- Markdownを開くアプリのBundle IDと絶対パス
 - 必要であれば最後の検索語
 
 ### 18.2 保存しない状態
@@ -913,7 +921,7 @@ SlugDock/
 │ [Back] Article Title                       [Reload] │
 │        example-article                               │
 ├──────────────────────────────────────────────────────┤
-│ [Copy MD Path] [Show MD in Finder]                 │
+│ [Copy MD Path] [Show MD in Finder] [Open MD in App]│
 │ [Copy Image Folder Path] [Open Image Folder]       │
 ├──────────────────────────────────────────────────────┤
 │                                                      │
@@ -963,11 +971,16 @@ SlugDock/
 - 対応外の画像形式
 - 画像が3MBを超えている
 - Finder表示の対象ファイルまたはフォルダが存在しない
+- 保存したMarkdownアプリが存在しない、またはアプリとして使用できない
+- Markdownを選択したアプリで開けない
 - クリップボードへ書き込めない
 
 Finder操作では、呼び出し前に対象ファイルまたはフォルダの存在を確認し、画像フォルダの作成失敗など、アプリが検出できるエラーを表示する。
 
-`NSWorkspace.activateFileViewerSelecting`または`NSWorkspace.open`を呼び出した後のFinder側の成否は追跡せず、保証しない。
+Finder操作では、`NSWorkspace.activateFileViewerSelecting`または`NSWorkspace.open`を呼び出した後のFinder側の成否は追跡せず、保証しない。
+
+Markdownの外部アプリ起動には`NSWorkspace.open(_:withApplicationAt:configuration:)`を使用し、非同期に返される失敗を表示する。
+保存済みアプリを解決できない場合は、別アプリへ暗黙的にフォールバックせず、`Change Markdown App…`からの再選択を案内する。
 
 ### 22.4 パス情報
 
@@ -1076,6 +1089,10 @@ UI状態の更新だけをMainActor上で行う。
 - ReturnでWorkspace Viewへ移行
 - 各パスのコピー
 - FinderでMarkdownを選択表示
+- 初回のMarkdownアプリ選択とMarkdown表示
+- 保存したMarkdownアプリでの再表示
+- Markdownアプリの再設定
+- 保存したMarkdownアプリが存在しない場合のエラー表示
 - 画像フォルダ作成と表示
 - 単一画像ドロップ
 - 複数画像ドロップ
@@ -1108,6 +1125,10 @@ UI状態の更新だけをMainActor上で行う。
 
 - Markdownの絶対パスをコピーできる
 - Finderで対象Markdownが選択状態になる
+- 初回に選択したアプリで対象Markdownを開ける
+- 選択したアプリが次回起動時にも使用される
+- `Change Markdown App…`から使用するアプリを変更できる
+- 保存したアプリが見つからない場合は、別アプリで開かず再設定を案内する
 
 ### 26.4 画像フォルダ操作
 
@@ -1188,6 +1209,7 @@ UI状態の更新だけをMainActor上で行う。
 
 - Markdownパスのコピー
 - MarkdownのFinder表示
+- Markdownを選択した外部アプリで開く
 - 画像フォルダパスのコピー
 - 画像フォルダの作成とFinder表示
 

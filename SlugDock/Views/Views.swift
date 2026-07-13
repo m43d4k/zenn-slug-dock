@@ -218,6 +218,7 @@ private struct WorkspaceView: View {
             HStack(spacing: 8) {
                 WorkspaceButton("Copy MD Path", expandsWidth: true) { state.copyMarkdownPath() }
                 WorkspaceButton("Show MD in Finder", expandsWidth: true) { state.revealMarkdown() }
+                WorkspaceButton("Open MD in App", expandsWidth: true) { state.openMarkdownInApplication() }
                 Divider().frame(height: 20)
                 WorkspaceButton("Copy Image Folder Path", expandsWidth: true) { state.copyImageDirectoryPath() }
                 WorkspaceButton("Open Image Folder", expandsWidth: true) { state.openImageDirectory() }

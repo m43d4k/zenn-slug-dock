@@ -97,6 +97,20 @@ final class SlugDockTests: XCTestCase, @unchecked Sendable {
         XCTAssertFalse(spaced.hasSuffix("\n"))
     }
 
+    func testMarkdownApplicationPreferencePersistsBundleIdentifierAndPath() throws {
+        let suiteName = "SlugDockTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let preference = MarkdownApplicationPreference(
+            bundleIdentifier: "com.example.MarkdownEditor",
+            path: "/Applications/Markdown Editor.app"
+        )
+
+        SettingsService.saveMarkdownApplication(preference, to: defaults)
+
+        XCTAssertEqual(SettingsService.loadMarkdownApplication(from: defaults), preference)
+    }
+
     func testImageImportValidationAcceptsBoundaryAndRejectsOversizeUnsupportedAndDirectory() async throws {
         let repository = try makeTemporaryRepository()
         let source = FileManager.default.temporaryDirectory
@@ -123,7 +137,7 @@ final class SlugDockTests: XCTestCase, @unchecked Sendable {
 
         XCTAssertEqual(result.copied.map(\.fileName), ["accepted.PNG"])
         XCTAssertEqual(result.failures.count, 3)
-        XCTAssertTrue(result.failures.contains(where: { $0.fileName == "large.webp" && $0.reason.contains("3MB") }))
+        XCTAssertTrue(result.failures.contains(where: { $0.fileName == "large.webp" && $0.reason.contains("3 MB") }))
     }
 
     func testExistingOversizeImageIsStillListed() async throws {

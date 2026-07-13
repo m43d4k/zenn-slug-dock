@@ -6,6 +6,7 @@ Zennの記事と画像をtitle・slug単位で管理するmacOSアプリ
 ## 主な機能
 
 - 記事のtitle・slug一覧表示
+- 選択したアプリでMarkdownを開く
 - Markdownと画像フォルダのFinder表示
 - ファイルパスのクリップボードコピー
 - 画像のドラッグ＆ドロップ追加
@@ -42,8 +43,11 @@ xcodebuild test \
 1. 初回起動時に、`articles/`を含むZennリポジトリのルートを選択する
 2. titleまたはslugで記事を検索する
 3. 記事をダブルクリックするか、選択してReturnを押し、Workspace Viewを開く
-4. Markdownや画像フォルダのパスコピー、Finder表示を行う
-5. 画像一覧へPNG、JPEG、GIF、WebPファイルをドロップして追加する
+4. `Open MD in App`を押し、初回だけMarkdownを開くアプリを選択する
+5. Markdownや画像フォルダのパスコピー、Finder表示を行う
+6. 画像一覧へPNG、JPEG、GIF、WebPファイルをドロップして追加する
+
+選択したMarkdownアプリはSlugDockの設定として保存され、次回以降も使用される。macOS全体の既定アプリは変更しない。使用するアプリを変更する場合は、`Actions`メニューの`Change Markdown App…`を選択する。
 
 ドロップで追加できる画像は1ファイルあたり3,000,000 bytes以下。既存ファイルは上書きせず、同名の場合は`-2`、`-3`のように連番を付ける。
 

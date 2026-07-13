@@ -1,6 +1,7 @@
 import AppKit
 import Foundation
 import Observation
+import UniformTypeIdentifiers
 
 @MainActor
 @Observable
@@ -118,6 +119,53 @@ final class AppState {
     func revealMarkdown() {
         guard let article = selectedArticle else { return }
         perform { try SystemService.revealInFinder(article.markdownURL) }
+    }
+
+    func openMarkdownInApplication() {
+        guard let article = selectedArticle else { return }
+        guard let preference = SettingsService.markdownApplication else {
+            chooseMarkdownApplication(openCurrentArticle: true)
+            return
+        }
+        guard let applicationURL = SystemService.markdownApplicationURL(for: preference) else {
+            alertMessage = SlugDockError.markdownApplicationMissing.localizedDescription
+            return
+        }
+
+        Task {
+            do {
+                try await SystemService.openMarkdown(article.markdownURL, withApplicationAt: applicationURL)
+            } catch {
+                alertMessage = error.localizedDescription
+            }
+        }
+    }
+
+    func chooseMarkdownApplication(openCurrentArticle: Bool = false) {
+        let panel = NSOpenPanel()
+        panel.title = "Select a Markdown Application"
+        panel.prompt = "Select"
+        panel.directoryURL = URL(fileURLWithPath: "/Applications", isDirectory: true)
+        panel.allowedContentTypes = [.application]
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.resolvesAliases = true
+
+        guard panel.runModal() == .OK, let selectedURL = panel.url else { return }
+        let normalizedURL = selectedURL.standardizedFileURL
+        guard let bundleIdentifier = Bundle(url: normalizedURL)?.bundleIdentifier else {
+            alertMessage = SlugDockError.invalidMarkdownApplication.localizedDescription
+            return
+        }
+
+        SettingsService.markdownApplication = MarkdownApplicationPreference(
+            bundleIdentifier: bundleIdentifier,
+            path: normalizedURL.path
+        )
+        if openCurrentArticle {
+            openMarkdownInApplication()
+        }
     }
 
     func copyImageDirectoryPath() {

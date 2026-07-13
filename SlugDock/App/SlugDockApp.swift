@@ -26,6 +26,8 @@ struct SlugDockApp: App {
                     .keyboardShortcut("[", modifiers: .command)
                     .disabled(state.selectedArticle == nil)
 
+                Button("Change Markdown App…") { state.chooseMarkdownApplication() }
+
                 Divider()
 
                 Button("Copy as Markdown") { state.copySelectedImageMarkdown() }

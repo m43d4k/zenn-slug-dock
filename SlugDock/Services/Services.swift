@@ -305,6 +305,8 @@ enum SlugDockError: LocalizedError, Equatable {
     case imageNameAlreadyExists
     case imageRenameFailed(String)
     case targetMissing
+    case markdownApplicationMissing
+    case invalidMarkdownApplication
     case clipboardWriteFailed
 
     var errorDescription: String? {
@@ -321,9 +323,17 @@ enum SlugDockError: LocalizedError, Equatable {
         case .imageNameAlreadyExists: "A file with the same name already exists"
         case let .imageRenameFailed(reason): "Unable to rename the image: \(reason)"
         case .targetMissing: "The target could not be found"
+        case .markdownApplicationMissing:
+            "The selected Markdown application could not be found. Choose it again from Actions > Change Markdown App…"
+        case .invalidMarkdownApplication: "Select a valid macOS application"
         case .clipboardWriteFailed: "Unable to copy to the clipboard"
         }
     }
+}
+
+struct MarkdownApplicationPreference: Equatable {
+    let bundleIdentifier: String
+    let path: String
 }
 
 @MainActor
@@ -349,12 +359,37 @@ enum SystemService {
         }
         NSWorkspace.shared.open(url)
     }
+
+    static func markdownApplicationURL(for preference: MarkdownApplicationPreference) -> URL? {
+        let savedURL = URL(fileURLWithPath: preference.path, isDirectory: true).standardizedFileURL
+        if FileManager.default.fileExists(atPath: savedURL.path),
+           Bundle(url: savedURL)?.bundleIdentifier == preference.bundleIdentifier {
+            return savedURL
+        }
+        return NSWorkspace.shared.urlForApplication(withBundleIdentifier: preference.bundleIdentifier)
+    }
+
+    static func openMarkdown(_ markdownURL: URL, withApplicationAt applicationURL: URL) async throws {
+        guard FileManager.default.fileExists(atPath: markdownURL.path) else {
+            throw SlugDockError.targetMissing
+        }
+        guard FileManager.default.fileExists(atPath: applicationURL.path) else {
+            throw SlugDockError.markdownApplicationMissing
+        }
+        _ = try await NSWorkspace.shared.open(
+            [markdownURL],
+            withApplicationAt: applicationURL,
+            configuration: NSWorkspace.OpenConfiguration()
+        )
+    }
 }
 
 enum SettingsService {
     private static let repositoryPathKey = "repositoryRootPath"
     private static let windowWidthKey = "windowWidth"
     private static let windowHeightKey = "windowHeight"
+    private static let markdownApplicationBundleIdentifierKey = "markdownApplicationBundleIdentifier"
+    private static let markdownApplicationPathKey = "markdownApplicationPath"
 
     static var repositoryURL: URL? {
         get {
@@ -376,5 +411,31 @@ enum SettingsService {
             UserDefaults.standard.set(newValue.width, forKey: windowWidthKey)
             UserDefaults.standard.set(newValue.height, forKey: windowHeightKey)
         }
+    }
+
+    static var markdownApplication: MarkdownApplicationPreference? {
+        get {
+            loadMarkdownApplication(from: .standard)
+        }
+        set {
+            saveMarkdownApplication(newValue, to: .standard)
+        }
+    }
+
+    static func loadMarkdownApplication(from defaults: UserDefaults) -> MarkdownApplicationPreference? {
+        guard let bundleIdentifier = defaults.string(
+            forKey: markdownApplicationBundleIdentifierKey
+        ), let path = defaults.string(forKey: markdownApplicationPathKey) else {
+            return nil
+        }
+        return MarkdownApplicationPreference(bundleIdentifier: bundleIdentifier, path: path)
+    }
+
+    static func saveMarkdownApplication(
+        _ preference: MarkdownApplicationPreference?,
+        to defaults: UserDefaults
+    ) {
+        defaults.set(preference?.bundleIdentifier, forKey: markdownApplicationBundleIdentifierKey)
+        defaults.set(preference?.path, forKey: markdownApplicationPathKey)
     }
 }
