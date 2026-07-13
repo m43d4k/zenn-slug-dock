@@ -11,13 +11,13 @@ enum FrontMatterParser {
 
         let lines = normalized.split(separator: "\n", omittingEmptySubsequences: false)
         guard lines.first.map(stripCarriageReturn) == "---" else {
-            return FrontMatterResult(title: "タイトル未設定", error: nil)
+            return FrontMatterResult(title: "Untitled", error: nil)
         }
 
         guard let closingIndex = lines.dropFirst().firstIndex(where: { stripCarriageReturn($0) == "---" }) else {
             return FrontMatterResult(
-                title: "Front Matterエラー",
-                error: "Front Matterの終了区切りがありません"
+                title: "Front Matter Error",
+                error: "Front Matter has no closing delimiter"
             )
         }
 
@@ -31,17 +31,17 @@ enum FrontMatterParser {
                mapping.keys.contains("title"),
                !(mapping["title"] is String) {
                 return FrontMatterResult(
-                    title: "Front Matterエラー",
-                    error: "Front Matterのtitleは文字列で指定してください"
+                    title: "Front Matter Error",
+                    error: "Front Matter title must be a string"
                 )
             }
             let frontMatter = try YAMLDecoder().decode(ArticleFrontMatter.self, from: yaml)
             let title = frontMatter.title?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            return FrontMatterResult(title: title.isEmpty ? "タイトル未設定" : title, error: nil)
+            return FrontMatterResult(title: title.isEmpty ? "Untitled" : title, error: nil)
         } catch {
             return FrontMatterResult(
-                title: "Front Matterエラー",
-                error: "Front Matterを解析できません: \(error.localizedDescription)"
+                title: "Front Matter Error",
+                error: "Unable to parse Front Matter: \(error.localizedDescription)"
             )
         }
     }
@@ -86,13 +86,13 @@ actor FileSystemService {
                 guard let markdown = String(data: data, encoding: .utf8) else {
                     return Article(
                         id: url,
-                        title: "読み取りエラー",
+                        title: "Read Error",
                         slug: slug,
                         markdownURL: url,
                         imageDirectoryURL: imageDirectoryURL,
                         modifiedAt: modifiedAt,
                         frontMatterError: nil,
-                        readError: "MarkdownをUTF-8として読み取れません"
+                        readError: "Unable to read Markdown as UTF-8"
                     )
                 }
                 let parsed = FrontMatterParser.parse(markdown: markdown)
@@ -109,13 +109,13 @@ actor FileSystemService {
             } catch {
                 return Article(
                     id: url,
-                    title: "読み取りエラー",
+                    title: "Read Error",
                     slug: slug,
                     markdownURL: url,
                     imageDirectoryURL: imageDirectoryURL,
                     modifiedAt: modifiedAt,
                     frontMatterError: nil,
-                    readError: "Markdownを読み取れません: \(error.localizedDescription)"
+                    readError: "Unable to read Markdown: \(error.localizedDescription)"
                 )
             }
         }
@@ -167,7 +167,7 @@ actor FileSystemService {
         do {
             try createImageDirectory(for: article)
         } catch {
-            let reason = "画像フォルダを作成できません: \(error.localizedDescription)"
+            let reason = "Unable to create the image folder: \(error.localizedDescription)"
             return ImageImportResult(
                 copied: [],
                 failures: sourceURLs.map { ImageImportFailure(fileName: $0.lastPathComponent, reason: reason) },
@@ -278,9 +278,9 @@ actor FileSystemService {
 
     private func userFacingReason(for error: Error) -> String {
         if let error = error as? SlugDockError {
-            return error.errorDescription ?? "追加できませんでした"
+            return error.errorDescription ?? "Unable to add item"
         }
-        return "コピーできません: \(error.localizedDescription)"
+        return "Unable to copy item: \(error.localizedDescription)"
     }
 
     private func articleSort(_ lhs: Article, _ rhs: Article) -> Bool {
@@ -309,19 +309,19 @@ enum SlugDockError: LocalizedError, Equatable {
 
     var errorDescription: String? {
         switch self {
-        case .articlesDirectoryMissing: "articles ディレクトリが見つかりません"
-        case .imagePathIsNotDirectory: "画像の保存先がフォルダではありません"
-        case .remoteURLNotSupported: "ローカルファイルではありません"
-        case .notARegularFile: "通常のファイルではありません"
-        case .unsupportedImageType: "対応していない画像形式です"
-        case .fileNotReadable: "ファイルを読み取れません"
-        case .imageTooLarge: "3MBを超えているため追加できません"
-        case .invalidImageFileName: "画像名が正しくありません"
-        case .imageExtensionCannotChange: "画像の拡張子は変更できません"
-        case .imageNameAlreadyExists: "同じ名前のファイルがすでに存在します"
-        case let .imageRenameFailed(reason): "画像名を変更できません: \(reason)"
-        case .targetMissing: "対象が見つかりません"
-        case .clipboardWriteFailed: "クリップボードへコピーできません"
+        case .articlesDirectoryMissing: "articles directory not found"
+        case .imagePathIsNotDirectory: "The image destination is not a folder"
+        case .remoteURLNotSupported: "The item is not a local file"
+        case .notARegularFile: "The item is not a regular file"
+        case .unsupportedImageType: "Unsupported image format"
+        case .fileNotReadable: "Unable to read the file"
+        case .imageTooLarge: "The image exceeds 3 MB"
+        case .invalidImageFileName: "Invalid image name"
+        case .imageExtensionCannotChange: "The image extension cannot be changed"
+        case .imageNameAlreadyExists: "A file with the same name already exists"
+        case let .imageRenameFailed(reason): "Unable to rename the image: \(reason)"
+        case .targetMissing: "The target could not be found"
+        case .clipboardWriteFailed: "Unable to copy to the clipboard"
         }
     }
 }

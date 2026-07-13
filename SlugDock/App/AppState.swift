@@ -47,8 +47,8 @@ final class AppState {
 
     func chooseRepository() {
         let panel = NSOpenPanel()
-        panel.title = "Zennリポジトリを選択"
-        panel.prompt = "選択"
+        panel.title = "Select a Zenn Repository"
+        panel.prompt = "Select"
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.allowsMultipleSelection = false
@@ -60,7 +60,7 @@ final class AppState {
         var isDirectory: ObjCBool = false
         guard FileManager.default.fileExists(atPath: articlesURL.path, isDirectory: &isDirectory),
               isDirectory.boolValue else {
-            alertMessage = "選択したフォルダに articles ディレクトリがありません。"
+            alertMessage = "The selected folder does not contain an articles directory."
             return
         }
 
@@ -78,7 +78,7 @@ final class AppState {
     func reload() {
         guard let repositoryURL else { return }
         if let selectedArticle {
-            reloadWritingMode(articleID: selectedArticle.id, repositoryURL: repositoryURL)
+            reloadWorkspace(articleID: selectedArticle.id, repositoryURL: repositoryURL)
         } else {
             reloadArticles(repositoryURL: repositoryURL)
         }
@@ -112,7 +112,7 @@ final class AppState {
 
     func copyMarkdownPath() {
         guard let article = selectedArticle else { return }
-        copy(article.markdownURL.path, successMessage: "MDパスをコピーしました")
+        copy(article.markdownURL.path, successMessage: "MD path copied")
     }
 
     func revealMarkdown() {
@@ -122,7 +122,7 @@ final class AppState {
 
     func copyImageDirectoryPath() {
         guard let article = selectedArticle else { return }
-        copy(article.imageDirectoryURL.path, successMessage: "画像フォルダパスをコピーしました")
+        copy(article.imageDirectoryURL.path, successMessage: "Image folder path copied")
     }
 
     func openImageDirectory() {
@@ -144,12 +144,12 @@ final class AppState {
 
     func copySelectedImageMarkdown() {
         guard let image = selectedImage else { return }
-        copy(image.markdownPath, successMessage: "Markdownとしてコピーしました")
+        copy(image.markdownPath, successMessage: "Copied as Markdown")
     }
 
     func copySelectedImagePath() {
         guard let image = selectedImage else { return }
-        copy(image.fileURL.path, successMessage: "画像のフルパスをコピーしました")
+        copy(image.fileURL.path, successMessage: "Image full path copied")
     }
 
     func revealSelectedImage() {
@@ -172,9 +172,9 @@ final class AppState {
                 guard selectedArticle?.id == article.id else { return }
                 await refreshImages(for: article, preferredSelection: renamedURL)
                 if renamedURL == image.fileURL {
-                    showStatus("画像名は変更されていません")
+                    showStatus("Image name unchanged")
                 } else {
-                    showStatus("画像名を変更しました")
+                    showStatus("Image renamed")
                 }
             } catch {
                 guard selectedArticle?.id == article.id else { return }
@@ -218,7 +218,7 @@ final class AppState {
         }
     }
 
-    private func reloadWritingMode(articleID: URL, repositoryURL: URL) {
+    private func reloadWorkspace(articleID: URL, repositoryURL: URL) {
         beginLoading()
         Task {
             defer { endLoading() }
@@ -230,7 +230,7 @@ final class AppState {
                     selectedArticle = nil
                     images = []
                     selectedImageID = nil
-                    statusMessage = "記事ファイルが見つかりません"
+                    statusMessage = "Article file not found"
                     return
                 }
                 selectedArticle = refreshedArticle
@@ -296,13 +296,13 @@ final class AppState {
     private func showImportResult(_ result: ImageImportResult) {
         var parts: [String] = []
         if !result.copied.isEmpty {
-            parts.append("\(result.copied.count)件の画像を追加しました")
+            parts.append("Added \(result.copied.count) image(s)")
         } else if result.selectedURL != nil && result.failures.isEmpty {
-            parts.append("画像一覧を更新しました")
+            parts.append("Image list updated")
         }
         if !result.failures.isEmpty {
             let details = result.failures.map { "\($0.fileName): \($0.reason)" }.joined(separator: "\n")
-            parts.append("\(result.failures.count)件を追加できませんでした\n\(details)")
+            parts.append("Failed to add \(result.failures.count) item(s)\n\(details)")
         }
         statusMessage = parts.joined(separator: "\n")
     }

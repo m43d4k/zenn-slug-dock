@@ -12,35 +12,35 @@ struct SlugDockApp: App {
         .defaultSize(SettingsService.windowSize)
         .commands {
             CommandGroup(replacing: .newItem) {
-                Button("リポジトリを変更…") {
+                Button("Change Repository…") {
                     state.chooseRepository()
                 }
                 .keyboardShortcut("o", modifiers: [.command, .shift])
             }
 
-            CommandMenu("操作") {
-                Button("再読み込み") { state.reload() }
+            CommandMenu("Actions") {
+                Button("Reload") { state.reload() }
                     .keyboardShortcut("r", modifiers: .command)
 
-                Button("記事一覧へ戻る") { state.returnToArticleList() }
+                Button("Back to Article List") { state.returnToArticleList() }
                     .keyboardShortcut("[", modifiers: .command)
                     .disabled(state.selectedArticle == nil)
 
                 Divider()
 
-                Button("Markdownとしてコピー") { state.copySelectedImageMarkdown() }
+                Button("Copy as Markdown") { state.copySelectedImageMarkdown() }
                     .keyboardShortcut("c", modifiers: [.command, .shift])
                     .disabled(state.selectedImageID == nil)
 
-                Button("画像のフルパスをコピー") { state.copySelectedImagePath() }
+                Button("Copy Image Full Path") { state.copySelectedImagePath() }
                     .keyboardShortcut("c", modifiers: [.command, .option])
                     .disabled(state.selectedImageID == nil)
 
-                Button("画像をFinderで表示") { state.revealSelectedImage() }
+                Button("Show Image in Finder") { state.revealSelectedImage() }
                     .keyboardShortcut("r", modifiers: [.command, .shift])
                     .disabled(state.selectedImageID == nil)
 
-                Button("画像名を変更…") { state.requestRenameSelectedImage() }
+                Button("Rename Image…") { state.requestRenameSelectedImage() }
                     .keyboardShortcut(.return, modifiers: [])
                     .disabled(state.selectedImageID == nil)
             }

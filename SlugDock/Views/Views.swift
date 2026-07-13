@@ -10,7 +10,7 @@ struct RootView: View {
             if state.repositoryURL == nil {
                 RepositorySelectionView(state: state)
             } else if let article = state.selectedArticle {
-                WritingView(state: state, article: article)
+                WorkspaceView(state: state, article: article)
             } else {
                 ArticleListView(state: state)
             }
@@ -30,7 +30,7 @@ struct RootView: View {
                     .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
             }
         }
-        .alert("エラー", isPresented: Binding(
+        .alert("Error", isPresented: Binding(
             get: { state.alertMessage != nil },
             set: { if !$0 { state.alertMessage = nil } }
         )) {
@@ -63,11 +63,11 @@ private struct RepositorySelectionView: View {
 
     var body: some View {
         ContentUnavailableView {
-            Label("Zennリポジトリを選択", systemImage: "folder")
+            Label("Select a Zenn Repository", systemImage: "folder")
         } description: {
-            Text("articles フォルダを含むリポジトリを選択してください。")
+            Text("Select a repository that contains an articles folder.")
         } actions: {
-            Button("リポジトリを選択…") {
+            Button("Select Repository…") {
                 state.chooseRepository()
             }
             .keyboardShortcut(.defaultAction)
@@ -83,9 +83,9 @@ private struct ArticleListView: View {
             HStack {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(.secondary)
-                TextField("title または slug を検索", text: $state.searchText)
+                TextField("Search by title or slug", text: $state.searchText)
                     .textFieldStyle(.plain)
-                    .accessibilityLabel("記事を検索")
+                    .accessibilityLabel("Search articles")
             }
             .padding(9)
             .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
@@ -97,21 +97,21 @@ private struct ArticleListView: View {
                         if article.displayError != nil {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .foregroundStyle(.orange)
-                                .accessibilityLabel("エラーあり")
+                                .accessibilityLabel("Has an error")
                         }
                         Text(article.title)
                     }
                     .accessibilityElement(children: .combine)
-                    .accessibilityLabel("タイトル \(article.title)")
+                    .accessibilityLabel("Title: \(article.title)")
                 }
                 TableColumn("Slug") { article in
                     Text(article.slug)
                         .foregroundStyle(.secondary)
-                        .accessibilityLabel("スラッグ \(article.slug)")
+                        .accessibilityLabel("Slug: \(article.slug)")
                 }
             }
             .contextMenu(forSelectionType: URL.self) { selection in
-                Button("執筆モードで開く") {
+                Button("Open Workspace") {
                     guard let id = selection.first,
                           let article = state.articles.first(where: { $0.id == id }) else { return }
                     state.openArticle(article)
@@ -125,7 +125,7 @@ private struct ArticleListView: View {
             .overlay {
                 if state.filteredArticles.isEmpty && !state.isLoading {
                     ContentUnavailableView(
-                        state.searchText.isEmpty ? "記事がありません" : "検索結果がありません",
+                        state.searchText.isEmpty ? "No Articles" : "No Results",
                         systemImage: "doc.text.magnifyingglass"
                     )
                 }
@@ -137,25 +137,59 @@ private struct ArticleListView: View {
                 Button {
                     state.openRepositoryInFinder()
                 } label: {
-                    Label("リポジトリをFinderで開く", systemImage: "folder")
+                    Label("Open Repository in Finder", systemImage: "folder")
                 }
                 Button {
                     state.chooseRepository()
                 } label: {
-                    Label("リポジトリを変更", systemImage: "folder.badge.gearshape")
+                    Label("Change Repository", systemImage: "folder.badge.gearshape")
                 }
                 Button {
                     state.reload()
                 } label: {
-                    Label("再読み込み", systemImage: "arrow.clockwise")
+                    Label("Reload", systemImage: "arrow.clockwise")
                 }
-                .accessibilityLabel("記事を再読み込み")
+                .accessibilityLabel("Reload articles")
             }
         }
     }
 }
 
-private struct WritingView: View {
+private struct WorkspaceButton<Label: View>: View {
+    private let expandsWidth: Bool
+    private let action: () -> Void
+    private let label: Label
+
+    init(
+        expandsWidth: Bool = false,
+        action: @escaping () -> Void,
+        @ViewBuilder label: () -> Label
+    ) {
+        self.expandsWidth = expandsWidth
+        self.action = action
+        self.label = label()
+    }
+
+    var body: some View {
+        Button(action: action) {
+            label
+                .frame(maxWidth: expandsWidth ? .infinity : nil)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+        }
+        .buttonStyle(.bordered)
+    }
+}
+
+private extension WorkspaceButton where Label == Text {
+    init(_ title: String, expandsWidth: Bool = false, action: @escaping () -> Void) {
+        self.init(expandsWidth: expandsWidth, action: action) {
+            Text(title)
+        }
+    }
+}
+
+private struct WorkspaceView: View {
     @Bindable var state: AppState
     let article: Article
     @State private var isDropTargeted = false
@@ -163,10 +197,10 @@ private struct WritingView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(alignment: .firstTextBaseline) {
-                Button {
+                WorkspaceButton {
                     state.returnToArticleList()
                 } label: {
-                    Label("戻る", systemImage: "chevron.left")
+                    Label("Back", systemImage: "chevron.left")
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -181,12 +215,12 @@ private struct WritingView: View {
                 Spacer()
             }
 
-            HStack {
-                Button("MDパスをコピー") { state.copyMarkdownPath() }
-                Button("MDをFinderで表示") { state.revealMarkdown() }
+            HStack(spacing: 8) {
+                WorkspaceButton("Copy MD Path", expandsWidth: true) { state.copyMarkdownPath() }
+                WorkspaceButton("Show MD in Finder", expandsWidth: true) { state.revealMarkdown() }
                 Divider().frame(height: 20)
-                Button("画像フォルダパスをコピー") { state.copyImageDirectoryPath() }
-                Button("画像フォルダをFinderで開く") { state.openImageDirectory() }
+                WorkspaceButton("Copy Image Folder Path", expandsWidth: true) { state.copyImageDirectoryPath() }
+                WorkspaceButton("Open Image Folder", expandsWidth: true) { state.openImageDirectory() }
             }
 
             ImageGridView(state: state, isDropTargeted: isDropTargeted)
@@ -203,9 +237,9 @@ private struct WritingView: View {
             Button {
                 state.reload()
             } label: {
-                Label("再読み込み", systemImage: "arrow.clockwise")
+                Label("Reload", systemImage: "arrow.clockwise")
             }
-            .accessibilityLabel("記事と画像を再読み込み")
+            .accessibilityLabel("Reload article and images")
         }
     }
 }
@@ -219,9 +253,9 @@ private struct ImageGridView: View {
         ScrollView {
             if state.images.isEmpty {
                 ContentUnavailableView {
-                    Label("画像はありません", systemImage: "photo.on.rectangle.angled")
+                    Label("No Images", systemImage: "photo.on.rectangle.angled")
                 } description: {
-                    Text("ここへ画像をドロップ")
+                    Text("Drop images here")
                 }
                 .frame(maxWidth: .infinity, minHeight: 320)
             } else {
@@ -240,20 +274,20 @@ private struct ImageGridView: View {
                             state.selectedImageID = image.id
                         })
                         .contextMenu {
-                            Button("Markdownとしてコピー") {
+                            Button("Copy as Markdown") {
                                 state.selectedImageID = image.id
                                 state.copySelectedImageMarkdown()
                             }
-                            Button("フルパスをコピー") {
+                            Button("Copy Full Path") {
                                 state.selectedImageID = image.id
                                 state.copySelectedImagePath()
                             }
-                            Button("Finderで表示") {
+                            Button("Show in Finder") {
                                 state.selectedImageID = image.id
                                 state.revealSelectedImage()
                             }
                             Divider()
-                            Button("画像名を変更…") {
+                            Button("Rename Image…") {
                                 state.selectedImageID = image.id
                                 state.requestRenameSelectedImage()
                             }
@@ -273,7 +307,7 @@ private struct ImageGridView: View {
                     style: StrokeStyle(lineWidth: isDropTargeted ? 2 : 1, dash: [7])
                 )
         }
-        .accessibilityLabel("画像一覧。ここへ画像をドロップできます")
+        .accessibilityLabel("Image list. You can drop images here.")
     }
 }
 
@@ -291,25 +325,25 @@ private struct RenameImageSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("画像名を変更")
+            Text("Rename Image")
                 .font(.headline)
             HStack(spacing: 6) {
-                TextField("ファイル名", text: $baseName)
+                TextField("File name", text: $baseName)
                     .textFieldStyle(.roundedBorder)
-                    .accessibilityLabel("新しい画像ファイル名")
+                    .accessibilityLabel("New image file name")
                     .onSubmit(submit)
                 Text(".\(image.fileURL.pathExtension)")
                     .foregroundStyle(.secondary)
             }
-            Text("拡張子は変更できません。")
+            Text("The file extension cannot be changed.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
             HStack {
                 Spacer()
-                Button("キャンセル", role: .cancel) { dismiss() }
+                Button("Cancel", role: .cancel) { dismiss() }
                     .keyboardShortcut(.cancelAction)
-                Button("変更") { submit() }
+                Button("Rename") { submit() }
                     .keyboardShortcut(.defaultAction)
                     .disabled(baseName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
@@ -356,7 +390,7 @@ private struct ImageCell: View {
                 .stroke(isSelected ? Color.accentColor : Color.secondary.opacity(0.18), lineWidth: isSelected ? 3 : 1)
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("画像 \(image.fileName)、\(FileSizeTextFormatter.string(fromByteCount: image.fileSize))")
+        .accessibilityLabel("Image: \(image.fileName), \(FileSizeTextFormatter.string(fromByteCount: image.fileSize))")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }

@@ -18,11 +18,11 @@ final class SlugDockTests: XCTestCase, @unchecked Sendable {
     func testFrontMatterUsesUntitledForEmptyOrMissingFrontMatter() {
         XCTAssertEqual(
             FrontMatterParser.parse(markdown: "---\ntitle: \"   \"\n---\n"),
-            FrontMatterResult(title: "タイトル未設定", error: nil)
+            FrontMatterResult(title: "Untitled", error: nil)
         )
         XCTAssertEqual(
             FrontMatterParser.parse(markdown: "# Front Matterなし"),
-            FrontMatterResult(title: "タイトル未設定", error: nil)
+            FrontMatterResult(title: "Untitled", error: nil)
         )
     }
 
@@ -66,7 +66,7 @@ final class SlugDockTests: XCTestCase, @unchecked Sendable {
         let scanned = try await FileSystemService().scanArticles(repositoryURL: repository)
         let article = try XCTUnwrap(scanned.first)
 
-        XCTAssertEqual(article.title, "読み取りエラー")
+        XCTAssertEqual(article.title, "Read Error")
         XCTAssertNotNil(article.readError)
         XCTAssertNil(article.frontMatterError)
     }
