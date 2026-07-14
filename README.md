@@ -91,7 +91,7 @@
 
 ## 📌 ビルドと起動
 
-1. `SlugDock.xcodeproj`をXcode 26.3で開く
+1. `SlugDock.xcodeproj`をXcodeで開く
 2. Schemeで`SlugDock`、実行先で`My Mac`を選択する
 3. `⌘B`でビルドする
 4. `⌘R`でビルドしたアプリを起動する
@@ -102,7 +102,7 @@
 ~/Library/Developer/Xcode/DerivedData/SlugDock-<識別子>/Build/Products/Debug/SlugDock.app
 ```
 
-初回ビルド時はSwift Package ManagerがYams 6.2.2を取得するため、ネットワーク接続が必要になる。
+初回ビルド時は依存パッケージを取得するため、ネットワーク接続が必要になる。
 
 コマンドラインでテストする場合:
 
