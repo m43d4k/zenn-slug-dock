@@ -1,102 +1,81 @@
 # SlugDock
 
-Zennの記事と画像をtitle・slug単位で管理するmacOSアプリ
+- Zennの記事と画像をtitle・slug単位で管理するmacOSアプリ
+- Zenn CLIに足りない機能を補う
 
-## 主な機能
+## 📌 主な機能
 
-- 記事のtitle・slug・変更日一覧表示
+- 記事のtitle・slug・変更日を一覧表示
 - リポジトリルートのFinder表示と絶対パスのコピー
 - 選択したアプリでMarkdownを開く
 - Markdownと画像フォルダのFinder表示
 - ファイルパスのクリップボードコピー
 - 画像のドラッグ＆ドロップ追加
 - 画像ファイル名の変更
-- Zenn用画像記法のコピー
+- Zenn用画像Markdownをコピー
 
-## 操作方法
+## 📌 記事一覧
 
-1. 初回起動時に、`articles/`を含むZennリポジトリのルートを選択する
-2. titleまたはslugで記事を検索する
-3. 記事をダブルクリックするか、選択してReturnを押し、Workspace Viewを開く
-4. `Open MD in App`を押し、初回だけMarkdownを開くアプリを選択する
-5. Markdownや画像フォルダのパスコピー、Finder表示を行う
-6. 画像一覧へPNG、JPEG、GIF、WebPファイルをドロップして追加する
+titleまたはslugで記事を検索できる。
+記事を選択し`Return`キーを押すか、ダブルクリックするとWorkspace画面を開く。
 
-## 各機能の動作
+![記事一覧](docs/images/Article%20List.png)
 
-### 変更日
+### ツールバーのボタン
 
-記事一覧の`Date Modified`には、Markdownファイルが最後に変更された日時を表示する。
+左から順に:
 
-日時はmacOSの地域設定に合わせて表示する。
+- ZennリポジトリをFinderで開く
+- Zennリポジトリルートの絶対パスをクリップボードへコピーする
+- Zennリポジトリを変更する
+- 一覧を更新
 
-### リポジトリパスのコピー
+## 📌 Workspace
 
-記事一覧の`Copy Repository Path`を押すと、選択中のリポジトリルートの絶対パスをクリップボードへコピーする。
+![Workspace](docs/images/Workspace.png)
 
-コピーされる文字列に`cd`、引用符、改行は含まれない。
+### 上部のボタン
 
-### Markdownを開くアプリ
+- `Copy MD Path`: MDファイルの絶対パスをコピー
+- `Show MD in Finder`: MDファイルをFinderで表示
+- `Open MD in App`: MDファイルをアプリで開く
+    - アプリを変更する場合は、`Actions`メニュー > `Change Markdown App…`を選択。
+- `Copy Image Folder Path`: 記事に対応する画像フォルダの絶対パスをコピー
+- `Open Image Folder`: 記事に対応する画像フォルダ（`images/[slug]/`）をFinderで開く
 
-`Open MD in App`を初めて使用するときに、Markdownファイルを開くアプリを選択する。
+```
+├─ articles
+│  └── [slug].md
+└─ images
+   └── [slug]
+       └─ image1.png
+```
 
-選択したアプリはSlugDockの設定として保存され、次回以降も使用される。macOS全体の既定アプリは変更されない。
+### 画像
 
-使用するアプリを変更する場合は、`Actions`メニューから`Change Markdown App…`を選択する。
+破線のエリアに画像をドロップすると、記事に対応する画像フォルダへ画像を追加
 
-### 画像の追加
+- 対応画像形式: `PNG`, `JPEG`, `GIF`, `WebP`
+- 1ファイルあたり3MB以下
+- 同名のファイルが存在する場合は上書きせず、ファイル名に`-2`、`-3`と連番を付けて保存する
 
-画像一覧へ、次の形式のファイルをドラッグ＆ドロップして追加できる。
+コンテキストメニューまたはキーボードショートカットで次の操作が可能。
 
-- PNG
-- JPEG
-- GIF
-- WebP
+- Zenn用画像Markdownをコピー
+- 絶対パスをコピー
+- Finderで表示
+- ファイル名を変更
 
-1ファイルあたり3,000,000 bytes以下。
-
-同名のファイルがすでに存在する場合は上書きせず、ファイル名に`-2`、`-3`のような連番を付けて保存する。
-
-### 画像一覧
-
-画像名は拡張子を除いた1行で表示する。
-
-拡張子とファイルサイズは、画像名とは分けて表示する。
-
-画像を選択すると、コンテキストメニューまたはキーボードショートカットから次の操作を実行できる。
-
-- Zenn用Markdown記法のコピー
-- 絶対パスのコピー
-- Finderでの表示
-- ファイル名の変更
-
-### 画像フォルダ
-
-`Open Image Folder`を押すと、対象記事の画像フォルダをFinderで開く。
-
-画像フォルダが存在しない場合は、新しく作成してからFinderで開く。
-
-### 画像名の変更
-
-画像を選択して`Return`を押すか、コンテキストメニューから`Rename Image…`を選択すると、ファイル名を変更できる。
-
-入力欄には拡張子を含めず、拡張子は変更できない。
-
-変更先と同名のファイルがすでに存在する場合は、既存ファイルを上書きしない。
-
-## ショートカット
+![IMG Context](docs/images/img-menu.png)
 
 | ショートカット | 操作 |
 |---|---|
-| `⌘⇧O` | リポジトリを変更 |
-| `⌘R` | 再読み込み |
-| `⌘[` | 記事一覧へ戻る |
-| `Return` | 選択画像の名前を変更 |
-| `⌘⇧C` | 選択画像のMarkdown記法をコピー |
-| `⌥⌘C` | 選択画像の絶対パスをコピー |
-| `⌘⇧R` | 選択画像をFinderで表示 |
+| `⌘⇧C` | Zenn用画像Markdownをコピー |
+| `⌥⌘C` | 絶対パスをコピー |
+| `⌘⇧R` | Finderで表示 |
+| `Return` | ファイル名を変更 |
 
-## 開発環境
+## 📌 開発環境
 
 - macOS 15.0以降
 - Xcode 26.3
@@ -104,7 +83,7 @@ Zennの記事と画像をtitle・slug単位で管理するmacOSアプリ
 - SwiftUI / AppKit
 - Yams 6.2.2（Swift Package Manager）
 
-## ビルドと起動
+## 📌 ビルドと起動
 
 1. `SlugDock.xcodeproj`をXcode 26.3で開く
 2. Schemeで`SlugDock`、実行先で`My Mac`を選択する
@@ -127,3 +106,18 @@ xcodebuild test \
   -scheme SlugDock \
   -destination 'platform=macOS,arch=arm64'
 ```
+
+## 📌 アンインストール
+
+1. SlugDockを終了する
+2. `SlugDock.app`を保存場所からゴミ箱へ移動する
+3. ターミナルで次のコマンドを実行し、設定ファイル`~/Library/Preferences/local.SlugDock.plist`を削除する
+
+```sh
+defaults delete local.SlugDock
+```
+
+設定ファイルには、リポジトリルート、Markdownを開くアプリ、ウインドウサイズの設定が保存されている。
+
+## 📌 ライセンス
+MIT License — 詳細は [LICENSE](./LICENSE) を参照。
