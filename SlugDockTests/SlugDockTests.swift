@@ -25,17 +25,31 @@ final class SlugDockTests: XCTestCase, @unchecked Sendable {
         body
         """)
 
-        XCTAssertEqual(result, FrontMatterResult(title: "Swift: はじめの一歩", error: nil))
+        XCTAssertEqual(result, FrontMatterResult(title: "Swift: はじめの一歩", published: false, error: nil))
+    }
+
+    func testFrontMatterParsesPublishedAndSeparatesUnsetFromInvalidValues() {
+        XCTAssertEqual(
+            FrontMatterParser.parse(markdown: "---\ntitle: Public\npublished: true\n---"),
+            FrontMatterResult(title: "Public", published: true, error: nil)
+        )
+        XCTAssertEqual(
+            FrontMatterParser.parse(markdown: "---\ntitle: Unset\n---"),
+            FrontMatterResult(title: "Unset", published: nil, error: nil)
+        )
+        let invalid = FrontMatterParser.parse(markdown: "---\ntitle: Invalid\npublished: \"false\"\n---")
+        XCTAssertNil(invalid.published)
+        XCTAssertNotNil(invalid.error)
     }
 
     func testFrontMatterUsesUntitledForEmptyOrMissingFrontMatter() {
         XCTAssertEqual(
             FrontMatterParser.parse(markdown: "---\ntitle: \"   \"\n---\n"),
-            FrontMatterResult(title: "Untitled", error: nil)
+            FrontMatterResult(title: "Untitled", published: nil, error: nil)
         )
         XCTAssertEqual(
             FrontMatterParser.parse(markdown: "# Front Matterなし"),
-            FrontMatterResult(title: "Untitled", error: nil)
+            FrontMatterResult(title: "Untitled", published: nil, error: nil)
         )
     }
 
@@ -51,13 +65,13 @@ final class SlugDockTests: XCTestCase, @unchecked Sendable {
         XCTAssertNil(result.error)
     }
 
-    func testArticleScannerIncludesOnlyDirectLowercaseMarkdownAndSortsByTitleThenSlug() async throws {
+    func testArticleScannerIncludesOnlyDirectLowercaseMarkdownAndReadsMetadata() async throws {
         let repository = try makeTemporaryRepository()
         defer { try? FileManager.default.removeItem(at: repository) }
         let articles = repository.appendingPathComponent("articles")
         let modifiedArticle = articles.appendingPathComponent("z.md")
         let modifiedAt = Date(timeIntervalSince1970: 1_700_000_000)
-        try write("---\ntitle: beta\n---", to: modifiedArticle)
+        try write("---\ntitle: beta\npublished: true\n---", to: modifiedArticle)
         try FileManager.default.setAttributes([.modificationDate: modifiedAt], ofItemAtPath: modifiedArticle.path)
         try write("---\ntitle: Alpha\n---", to: articles.appendingPathComponent("b.md"))
         try write("---\ntitle: alpha\n---", to: articles.appendingPathComponent("a.md"))
@@ -69,10 +83,78 @@ final class SlugDockTests: XCTestCase, @unchecked Sendable {
 
         let result = try await FileSystemService().scanArticles(repositoryURL: repository)
 
-        XCTAssertEqual(result.map(\.slug), ["a", "b", "z"])
-        XCTAssertEqual(result.map(\.title), ["alpha", "Alpha", "beta"])
-        let scannedModifiedAt = try XCTUnwrap(result.last?.modifiedAt)
+        XCTAssertEqual(Set(result.map(\.slug)), Set(["a", "b", "z"]))
+        let modifiedResult = try XCTUnwrap(result.first(where: { $0.slug == "z" }))
+        XCTAssertEqual(modifiedResult.published, true)
+        let scannedModifiedAt = try XCTUnwrap(modifiedResult.modifiedAt)
         XCTAssertEqual(scannedModifiedAt.timeIntervalSince1970, modifiedAt.timeIntervalSince1970, accuracy: 1)
+    }
+
+    @MainActor
+    func testArticleListFiltersEveryStatusWithoutTreatingErrorsAsUnset() {
+        let state = AppState()
+        let repository = URL(fileURLWithPath: "/tmp/SlugDock", isDirectory: true)
+        state.articles = [
+            makeArticle(repository: repository, slug: "draft", published: false),
+            makeArticle(repository: repository, slug: "published", published: true),
+            makeArticle(repository: repository, slug: "unset"),
+            makeArticle(repository: repository, slug: "front-matter-error", frontMatterError: "Invalid YAML"),
+            makeArticle(repository: repository, slug: "read-error", readError: "Unreadable")
+        ]
+
+        let expectations: [(ArticleStatusFilter, [String])] = [
+            (.all, ["draft", "front-matter-error", "published", "read-error", "unset"]),
+            (.draft, ["draft"]),
+            (.published, ["published"]),
+            (.unset, ["unset"]),
+            (.errors, ["front-matter-error", "read-error"])
+        ]
+        for (filter, expectedSlugs) in expectations {
+            state.articleStatusFilter = filter
+            XCTAssertEqual(state.visibleArticles.map(\.slug), expectedSlugs)
+        }
+
+        state.articleStatusFilter = .errors
+        state.searchText = "front"
+        XCTAssertEqual(state.visibleArticles.map(\.slug), ["front-matter-error"])
+    }
+
+    @MainActor
+    func testArticleListSortsAllColumnsAndKeepsUnavailableValuesLast() {
+        let state = AppState()
+        let repository = URL(fileURLWithPath: "/tmp/SlugDock", isDirectory: true)
+        state.articles = [
+            makeArticle(repository: repository, slug: "c", title: "Beta", modifiedAt: nil, published: nil),
+            makeArticle(
+                repository: repository,
+                slug: "b",
+                title: "alpha",
+                modifiedAt: Date(timeIntervalSince1970: 200),
+                published: true
+            ),
+            makeArticle(
+                repository: repository,
+                slug: "a",
+                title: "Alpha",
+                modifiedAt: Date(timeIntervalSince1970: 100),
+                published: false
+            ),
+            makeArticle(repository: repository, slug: "d", title: "Gamma", readError: "Unreadable")
+        ]
+
+        XCTAssertEqual(state.visibleArticles.map(\.slug), ["b", "a", "c", "d"])
+        state.articleSortOrder = [ArticleSortComparator(field: .title)]
+        XCTAssertEqual(state.visibleArticles.map(\.slug), ["a", "b", "c", "d"])
+        state.articleSortOrder = [ArticleSortComparator(field: .slug, order: .reverse)]
+        XCTAssertEqual(state.visibleArticles.map(\.slug), ["d", "c", "b", "a"])
+        state.articleSortOrder = [ArticleSortComparator(field: .modifiedAt)]
+        XCTAssertEqual(state.visibleArticles.map(\.slug), ["a", "b", "c", "d"])
+        state.articleSortOrder = [ArticleSortComparator(field: .modifiedAt, order: .reverse)]
+        XCTAssertEqual(state.visibleArticles.map(\.slug), ["b", "a", "c", "d"])
+        state.articleSortOrder = [ArticleSortComparator(field: .status)]
+        XCTAssertEqual(state.visibleArticles.map(\.slug), ["a", "b", "c", "d"])
+        state.articleSortOrder = [ArticleSortComparator(field: .status, order: .reverse)]
+        XCTAssertEqual(state.visibleArticles.map(\.slug), ["b", "a", "c", "d"])
     }
 
     func testArticleScannerSeparatesReadErrorFromFrontMatterError() async throws {
@@ -234,17 +316,26 @@ final class SlugDockTests: XCTestCase, @unchecked Sendable {
         return repository
     }
 
-    private func makeArticle(repository: URL) -> Article {
-        let markdown = repository.appendingPathComponent("articles/test.md")
+    private func makeArticle(
+        repository: URL,
+        slug: String = "test",
+        title: String = "Test",
+        modifiedAt: Date? = nil,
+        published: Bool? = nil,
+        frontMatterError: String? = nil,
+        readError: String? = nil
+    ) -> Article {
+        let markdown = repository.appendingPathComponent("articles/\(slug).md")
         return Article(
             id: markdown,
-            title: "Test",
-            slug: "test",
+            title: title,
+            slug: slug,
             markdownURL: markdown,
-            imageDirectoryURL: repository.appendingPathComponent("images/test", isDirectory: true),
-            modifiedAt: nil,
-            frontMatterError: nil,
-            readError: nil
+            imageDirectoryURL: repository.appendingPathComponent("images/\(slug)", isDirectory: true),
+            modifiedAt: modifiedAt,
+            published: published,
+            frontMatterError: frontMatterError,
+            readError: readError
         )
     }
 

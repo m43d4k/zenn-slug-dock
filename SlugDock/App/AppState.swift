@@ -14,6 +14,8 @@ final class AppState {
     var selectedImageID: URL?
     var imageBeingRenamed: ImageAsset?
     var searchText = ""
+    var articleStatusFilter = ArticleStatusFilter.all
+    var articleSortOrder = [ArticleSortComparator(field: .modifiedAt, order: .reverse)]
     var statusMessage: String?
     var alertMessage: String?
     var isLoading = false
@@ -25,13 +27,32 @@ final class AppState {
         repositoryURL = SettingsService.repositoryURL
     }
 
-    var filteredArticles: [Article] {
+    var visibleArticles: [Article] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !query.isEmpty else { return articles }
-        return articles.filter {
-            $0.title.localizedCaseInsensitiveContains(query)
-                || $0.slug.localizedCaseInsensitiveContains(query)
+        let filtered = articles.filter { article in
+            let matchesSearch = query.isEmpty
+                || article.title.localizedCaseInsensitiveContains(query)
+                || article.slug.localizedCaseInsensitiveContains(query)
+            return matchesSearch && articleStatusFilter.matches(article)
         }
+        let comparators = articleSortOrder.isEmpty
+            ? [ArticleSortComparator(field: .modifiedAt, order: .reverse)]
+            : articleSortOrder
+        return filtered.sorted { lhs, rhs in
+            for comparator in comparators {
+                switch comparator.compare(lhs, rhs) {
+                case .orderedAscending: return true
+                case .orderedDescending: return false
+                case .orderedSame: continue
+                }
+            }
+            return lhs.slug.localizedCaseInsensitiveCompare(rhs.slug) == .orderedAscending
+        }
+    }
+
+    var hasActiveArticleQuery: Bool {
+        !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || articleStatusFilter != .all
     }
 
     func start() {
@@ -73,6 +94,8 @@ final class AppState {
         imageBeingRenamed = nil
         images = []
         searchText = ""
+        articleStatusFilter = .all
+        articleSortOrder = [ArticleSortComparator(field: .modifiedAt, order: .reverse)]
         reload()
     }
 

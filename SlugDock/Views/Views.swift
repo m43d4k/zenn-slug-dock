@@ -81,35 +81,54 @@ private struct ArticleListView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
-                TextField("Search by title or slug", text: $state.searchText)
-                    .textFieldStyle(.plain)
-                    .accessibilityLabel("Search articles")
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundStyle(.secondary)
+                    TextField("Search by title or slug", text: $state.searchText)
+                        .textFieldStyle(.plain)
+                        .accessibilityLabel("Search articles")
+                }
+                .padding(9)
+                .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
+
+                Picker("Status", selection: $state.articleStatusFilter) {
+                    ForEach(ArticleStatusFilter.allCases) { filter in
+                        Text(filter.rawValue).tag(filter)
+                    }
+                }
+                .pickerStyle(.menu)
+                .accessibilityLabel("Filter by status")
             }
-            .padding(9)
-            .background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
             .padding()
 
-            Table(state.filteredArticles, selection: $state.articleSelection) {
-                TableColumn("Title") { article in
-                    HStack(spacing: 6) {
-                        if article.displayError != nil {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundStyle(.orange)
-                                .accessibilityLabel("Has an error")
-                        }
-                        Text(article.title)
-                    }
-                    .accessibilityElement(children: .combine)
+            Table(
+                state.visibleArticles,
+                selection: $state.articleSelection,
+                sortOrder: $state.articleSortOrder
+            ) {
+                TableColumn("Title", sortUsing: ArticleSortComparator(field: .title)) { article in
+                    Text(article.title)
                     .accessibilityLabel("Title: \(article.title)")
                 }
-                TableColumn("Slug") { article in
+                TableColumn("Slug", sortUsing: ArticleSortComparator(field: .slug)) { article in
                     Text(article.slug)
                         .foregroundStyle(.secondary)
                         .accessibilityLabel("Slug: \(article.slug)")
                 }
-                TableColumn("Date Modified") { article in
+                TableColumn("Status", sortUsing: ArticleSortComparator(field: .status)) { article in
+                    HStack(spacing: 5) {
+                        if article.status.isError {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.orange)
+                        }
+                        Text(article.status.label)
+                            .foregroundStyle(article.status == .unset ? .tertiary : .secondary)
+                    }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Status: \(article.status.label)")
+                }
+                .width(min: 110, ideal: 150)
+                TableColumn("Date Modified", sortUsing: ArticleSortComparator(field: .modifiedAt)) { article in
                     if let modifiedAt = article.modifiedAt {
                         Text(modifiedAt, format: .dateTime.year().month().day().hour().minute())
                             .foregroundStyle(.secondary)
@@ -135,9 +154,9 @@ private struct ArticleListView: View {
                 state.openArticle(article)
             }
             .overlay {
-                if state.filteredArticles.isEmpty && !state.isLoading {
+                if state.visibleArticles.isEmpty && !state.isLoading {
                     ContentUnavailableView(
-                        state.searchText.isEmpty ? "No Articles" : "No Results",
+                        state.hasActiveArticleQuery ? "No Results" : "No Articles",
                         systemImage: "doc.text.magnifyingglass"
                     )
                 }

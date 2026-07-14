@@ -11,12 +11,13 @@ enum FrontMatterParser {
 
         let lines = normalized.split(separator: "\n", omittingEmptySubsequences: false)
         guard lines.first.map(stripCarriageReturn) == "---" else {
-            return FrontMatterResult(title: "Untitled", error: nil)
+            return FrontMatterResult(title: "Untitled", published: nil, error: nil)
         }
 
         guard let closingIndex = lines.dropFirst().firstIndex(where: { stripCarriageReturn($0) == "---" }) else {
             return FrontMatterResult(
                 title: "Front Matter Error",
+                published: nil,
                 error: "Front Matter has no closing delimiter"
             )
         }
@@ -32,15 +33,30 @@ enum FrontMatterParser {
                !(mapping["title"] is String) {
                 return FrontMatterResult(
                     title: "Front Matter Error",
+                    published: nil,
                     error: "Front Matter title must be a string"
+                )
+            }
+            if let mapping = rawFrontMatter as? [String: Any],
+               mapping.keys.contains("published"),
+               !(mapping["published"] is Bool) {
+                return FrontMatterResult(
+                    title: "Front Matter Error",
+                    published: nil,
+                    error: "Front Matter published must be a boolean"
                 )
             }
             let frontMatter = try YAMLDecoder().decode(ArticleFrontMatter.self, from: yaml)
             let title = frontMatter.title?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            return FrontMatterResult(title: title.isEmpty ? "Untitled" : title, error: nil)
+            return FrontMatterResult(
+                title: title.isEmpty ? "Untitled" : title,
+                published: frontMatter.published,
+                error: nil
+            )
         } catch {
             return FrontMatterResult(
                 title: "Front Matter Error",
+                published: nil,
                 error: "Unable to parse Front Matter: \(error.localizedDescription)"
             )
         }
@@ -91,6 +107,7 @@ actor FileSystemService {
                         markdownURL: url,
                         imageDirectoryURL: imageDirectoryURL,
                         modifiedAt: modifiedAt,
+                        published: nil,
                         frontMatterError: nil,
                         readError: "Unable to read Markdown as UTF-8"
                     )
@@ -103,6 +120,7 @@ actor FileSystemService {
                     markdownURL: url,
                     imageDirectoryURL: imageDirectoryURL,
                     modifiedAt: modifiedAt,
+                    published: parsed.published,
                     frontMatterError: parsed.error,
                     readError: nil
                 )
@@ -114,12 +132,12 @@ actor FileSystemService {
                     markdownURL: url,
                     imageDirectoryURL: imageDirectoryURL,
                     modifiedAt: modifiedAt,
+                    published: nil,
                     frontMatterError: nil,
                     readError: "Unable to read Markdown: \(error.localizedDescription)"
                 )
             }
         }
-        .sorted(by: articleSort)
     }
 
     func scanImages(for article: Article) throws -> [ImageAsset] {
@@ -283,13 +301,6 @@ actor FileSystemService {
         return "Unable to copy item: \(error.localizedDescription)"
     }
 
-    private func articleSort(_ lhs: Article, _ rhs: Article) -> Bool {
-        let titleOrder = lhs.title.localizedCaseInsensitiveCompare(rhs.title)
-        if titleOrder == .orderedSame {
-            return lhs.slug.localizedCaseInsensitiveCompare(rhs.slug) == .orderedAscending
-        }
-        return titleOrder == .orderedAscending
-    }
 }
 
 enum SlugDockError: LocalizedError, Equatable {
