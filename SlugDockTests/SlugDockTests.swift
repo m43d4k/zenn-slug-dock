@@ -55,7 +55,10 @@ final class SlugDockTests: XCTestCase, @unchecked Sendable {
         let repository = try makeTemporaryRepository()
         defer { try? FileManager.default.removeItem(at: repository) }
         let articles = repository.appendingPathComponent("articles")
-        try write("---\ntitle: beta\n---", to: articles.appendingPathComponent("z.md"))
+        let modifiedArticle = articles.appendingPathComponent("z.md")
+        let modifiedAt = Date(timeIntervalSince1970: 1_700_000_000)
+        try write("---\ntitle: beta\n---", to: modifiedArticle)
+        try FileManager.default.setAttributes([.modificationDate: modifiedAt], ofItemAtPath: modifiedArticle.path)
         try write("---\ntitle: Alpha\n---", to: articles.appendingPathComponent("b.md"))
         try write("---\ntitle: alpha\n---", to: articles.appendingPathComponent("a.md"))
         try write("---\ntitle: excluded\n---", to: articles.appendingPathComponent("upper.MD"))
@@ -68,6 +71,8 @@ final class SlugDockTests: XCTestCase, @unchecked Sendable {
 
         XCTAssertEqual(result.map(\.slug), ["a", "b", "z"])
         XCTAssertEqual(result.map(\.title), ["alpha", "Alpha", "beta"])
+        let scannedModifiedAt = try XCTUnwrap(result.last?.modifiedAt)
+        XCTAssertEqual(scannedModifiedAt.timeIntervalSince1970, modifiedAt.timeIntervalSince1970, accuracy: 1)
     }
 
     func testArticleScannerSeparatesReadErrorFromFrontMatterError() async throws {

@@ -4,7 +4,7 @@ Zennの記事と画像をtitle・slug単位で管理するmacOSアプリ
 
 ## 主な機能
 
-- 記事のtitle・slug一覧表示
+- 記事のtitle・slug・変更日一覧表示
 - リポジトリルートのFinder表示と絶対パスのコピー
 - 選択したアプリでMarkdownを開く
 - Markdownと画像フォルダのFinder表示
@@ -23,6 +23,12 @@ Zennの記事と画像をtitle・slug単位で管理するmacOSアプリ
 6. 画像一覧へPNG、JPEG、GIF、WebPファイルをドロップして追加する
 
 ## 各機能の動作
+
+### 変更日
+
+記事一覧の`Date Modified`には、Markdownファイルが最後に変更された日時を表示する。
+
+日時はmacOSの地域設定に合わせて表示する。
 
 ### リポジトリパスのコピー
 

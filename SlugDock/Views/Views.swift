@@ -109,6 +109,18 @@ private struct ArticleListView: View {
                         .foregroundStyle(.secondary)
                         .accessibilityLabel("Slug: \(article.slug)")
                 }
+                TableColumn("Date Modified") { article in
+                    if let modifiedAt = article.modifiedAt {
+                        Text(modifiedAt, format: .dateTime.year().month().day().hour().minute())
+                            .foregroundStyle(.secondary)
+                            .accessibilityLabel("Date modified: \(modifiedAt.formatted(date: .long, time: .shortened))")
+                    } else {
+                        Text("—")
+                            .foregroundStyle(.tertiary)
+                            .accessibilityLabel("Date modified unavailable")
+                    }
+                }
+                .width(min: 140, ideal: 170)
             }
             .contextMenu(forSelectionType: URL.self) { selection in
                 Button("Open Workspace") {
