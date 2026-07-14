@@ -16,8 +16,14 @@
 
 ## 📌 記事一覧
 
-titleまたはslugで記事を検索できる。
-記事を選択し`Return`キーを押すか、ダブルクリックするとWorkspace画面を開く。
+- titleまたはslugで記事を検索できる。
+- Statusプルダウンで`published`のステータスをフィルタ。
+    - `All`: すべての記事
+    - `Draft`：`published: false`
+    - `Published`：`published: true`
+    - `Unset`：`published`が空
+    - `Errors`：`published`がBool値以外
+- 記事を選択し`Return`キーを押すか、ダブルクリックするとWorkspace画面を開く。
 
 ![記事一覧](docs/images/Article%20List.png)
 
@@ -53,7 +59,7 @@ titleまたはslugで記事を検索できる。
 
 ### 画像
 
-破線のエリアに画像をドロップすると、記事に対応する画像フォルダへ画像を追加
+破線のエリアに画像をドロップすると、記事に対応する画像フォルダへ画像を追加する。
 
 - 対応画像形式: `PNG`, `JPEG`, `GIF`, `WebP`
 - 1ファイルあたり3MB以下
